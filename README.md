@@ -1,30 +1,5 @@
 # On-the-fly Image Resizer
-This service can resize nor convert images on-the-fly and is designed to work with AWS S3.
-
-## Usage
-The **endpoint** for manipulating images is **/resize**.  
-The service parses a query string for params to work with; here some working examples:
-```
-?key=images/theshot-640x0.jpeg
-```
-Will resize to a width of 640 pixels and keep the aspect ratio. The resulting redirect URI (301) will be:  
-*images/theshot-640x0.jpeg*
-
-```
-?key=blue_marble-720x720.jpg
-```
-Will resize the image to 720 by 720 in width and height. The resulting redirect URI (301) will be:  
-*blue_marble-720x720.jpg*
-
-```
-?key=gopher-0x480-jpg.png
-```
-Will resize the image to a height of 480 and keep the aspect ratio for width. The resized image is then converted from png to jpg. 
-The resulting redirect URI will be:  
-*gopher-0x480.jpg*
-
-## Possible Improvements
-- Replace github.com/disintegration/imaging with github.com/h2non/bimg
+This service can resize, crop nor convert images on-the-fly and is designed to work with AWS S3. The implementation was inspired by the idea from this blog [post on AWS](https://aws.amazon.com/de/blogs/compute/resize-images-on-the-fly-with-amazon-s3-aws-lambda-and-amazon-api-gateway/).
 
 ## Prerequisites
 You'll need a ready-to-use AWS account as well as a S3 bucket in place. 
@@ -46,7 +21,7 @@ Create a bucket policy to allow anonymous access.
     ]
 }
 ```
-You have to replace the ___BUCKET NAME___ placeholder with the your bucket name.
+You have to replace the ```___BUCKET NAME___``` placeholder with the your bucket name.
 
 The S3 bucket must be configured to host a static website. For the index document just enter index.html.
 In the website hosting you need to edit Redirection Rules like so:
@@ -60,9 +35,30 @@ In the website hosting you need to edit Redirection Rules like so:
             "HostName": "___HOSTNAME___",
             "HttpRedirectCode": "307",
             "Protocol": "https",
-            "ReplaceKeyPrefixWith": "resize?key="
+            "ReplaceKeyPrefixWith": "do?ref="
         }
     }
 ]
 ```
-You have to replace the ___HOSTNAME___ placeholder with the host, where the Image Resizer is running on.
+You have to replace the ```___HOSTNAME___``` placeholder with the host, where the Image Resizer is running on.
+
+### CloudFront
+
+Next, you have to set up a CloudFront distribution.
+
+Go to your newly created bucket, select Properties tab and scroll down to “Hosting a static web site”. Copy the endpoint URL without the scheme, e.g. “simplys3test.s3-website.eu-central-1.amazonaws.com“.
+
+Open CloudFront in your AWS console. Paste the copied bucket endpoint URL, without scheme, in the “Origin domain” field. Then scroll down to “Viewer” and select “https only” for the Viewer protocol policy. Now click on “Create distribution”.
+
+## Deployment / Development
+Set environment variables:  
+- AWS_ACCESS_KEY_ID: your AWS access key id
+- AWS_SECRET_ACCESS_KEY: your AWS secret access key  
+- REDIRECT_HOST: the domain from your CloudFront distribution
+- AWS_BUCKET: your bucket name
+- AWS_REGION: your region, e.g. eu-central-1
+
+The default port for this service is 4321. You can easily adjust this by providing a PORT environment variable, e.g. PORT=8080
+
+## Usage
+The **endpoint** for manipulating images is **/do**. This endpoint expects a query string parameter ```ref``` with a URL string and contained parameters for changing the image.  

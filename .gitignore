@@ -1,3 +1,5 @@
 .DS_Store
 .env
-scratch.md
+scratch.txt
+tmp/
+.air.toml

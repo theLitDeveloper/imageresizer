@@ -62,3 +62,32 @@ The default port for this service is 4321. You can easily adjust this by providi
 
 ## Usage
 The **endpoint** for manipulating images is **/do**. This endpoint expects a query string parameter ```ref``` with a URL string and contained parameters for changing the image.  
+
+The endpoint for manipulating images is /do by default. The service parses the query string provided by your AWS S3 bucket. So a valid request look like  
+```/do?ref=<params>/<resource path>/<resource name>```
+
+Available parameters for image manipulation:  
+
+**w_** (width) *required*  
+Example: w_500  
+
+**h_** (height) *required*  
+Example: h_924  
+
+**crop** *optional*  
+
+**gray** *optional*  
+
+Parameters can be specified in arbitrary order, only once each and separated by commas.
+Example: ```h_500,w_500,gray/images/test.jpg```  
+### Resizing
+Resizing is the default action. If a 0 is passed for the width or the height, the image is resized in height or width while the aspect ratio is preserved.
+
+### Cropping
+Cropping works similarly to resizing, but instead of resizing the image, it is centered and cropped to the specified width and length.
+
+### Convert to Grayscale
+Just add ```gray``` to parameters to discard any color in your image and convert it to grayscale.
+
+### Auto-conversion from PNG to JPG
+This is done automatically when a PNG file is submitted to this service.
